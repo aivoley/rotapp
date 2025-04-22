@@ -1,20 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 
-type Jugadora = {
-  nombre: string;
-  posiciones: string[];
-};
-
-type Punto = {
-  rotacion: number;
-  resultado: "ganado" | "perdido";
-  motivoGanado?: string;
-  motivoPerdido?: string;
-  jugadoraGanadora?: string | null;
-};
-
-const jugadorasBase: Jugadora[] = [
+const jugadorasBase = [
   { nombre: "Candela", posiciones: ["Armadora"] },
   { nombre: "Miranda", posiciones: ["Armadora"] },
   { nombre: "Florencia", posiciones: ["Central", "Opuesta"] },
@@ -33,21 +20,105 @@ const jugadorasBase: Jugadora[] = [
   { nombre: "Agustina", posiciones: ["Punta"] },
 ];
 
-const motivosGanados = ["ACE", "ATAQUE", "BLOQUEO", "TOQUE", "ERROR RIVAL"];
-const motivosPerdidos = [
-  "ERROR DE SAQUE",
-  "ERROR DE ATAQUE",
-  "BLOQUEO RIVAL",
-  "ERROR NO FORZADO",
-  "ERROR DE RECEPCION",
-  "ATAQUE RIVAL",
-  "SAQUE RIVAL",
+const motivosGanados = [
+  "ACE", "ATAQUE", "BLOQUEO", "TOQUE", "ERROR RIVAL"
 ];
 
+const motivosPerdidos = [
+  "ERROR DE SAQUE", "ERROR DE ATAQUE", "BLOQUEO RIVAL", "ERROR NO FORZADO", "ERROR DE RECEPCIÓN", "ATAQUE RIVAL", "SAQUE RIVAL"
+];
+
+const Container = styled.div`
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  background-color: #f0fdf4;
+`;
+
+const Court = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+
+const Title = styled.h1`
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+`;
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 12px;
+  width: 600px;
+  height: 400px;
+`;
+
+const Zona = styled.div`
+  background-color: #ffffff;
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const JugadoraNombre = styled.strong`
+  font-size: 16px;
+`;
+
+const JugadoraPosicion = styled.div`
+  font-size: 12px;
+  color: #6b7280;
+`;
+
+const Panel = styled.div`
+  width: 320px;
+  background-color: #ffffff;
+  padding: 24px;
+  border-left: 1px solid #ccc;
+  box-shadow: -4px 0 12px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const Button = styled.button<{ color?: string }>`
+  width: 100%;
+  padding: 10px;
+  background-color: ${({ color }) => color || "#3b82f6"};
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const Select = styled.select`
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+`;
+
+const Label = styled.h3`
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 10px;
+`;
+
 export default function Simulador() {
-  const [formacion, setFormacion] = useState<Jugadora[]>(jugadorasBase.slice(0, 6));
+  const [formacion, setFormacion] = useState(jugadorasBase.slice(0, 6));
   const [rotacion, setRotacion] = useState(0);
-  const [puntos, setPuntos] = useState<Punto[]>([]);
+  const [puntos, setPuntos] = useState<any[]>([]);
   const [motivoGanado, setMotivoGanado] = useState("");
   const [motivoPerdido, setMotivoPerdido] = useState("");
   const [jugadoraGanadora, setJugadoraGanadora] = useState<string | null>(null);
@@ -57,72 +128,76 @@ export default function Simulador() {
     setRotacion(r => (r + 1) % 6);
   };
 
-  const cargarResultado = (resultado: "ganado" | "perdido") => {
-    const punto: Punto = {
+  const cargarResultado = (resultado: string) => {
+    const punto = {
       rotacion,
       resultado,
-      motivoGanado: resultado === "ganado" ? motivoGanado : undefined,
-      motivoPerdido: resultado === "perdido" ? motivoPerdido : undefined,
-      jugadoraGanadora: resultado === "ganado" ? jugadoraGanadora : null,
+      motivoGanado,
+      motivoPerdido,
+      jugadoraGanadora,
     };
     setPuntos(prev => [...prev, punto]);
+    setMotivoGanado("");
+    setMotivoPerdido("");
+    setJugadoraGanadora(null);
   };
 
   return (
     <Container>
-      <CanchaContainer>
-        <h1>Rotación {rotacion + 1}</h1>
+      <Court>
+        <Title>Rotación {rotacion + 1}</Title>
         <Grid>
           {formacion.map((jugadora, index) => (
-            <JugadorCard key={index}>
-              <strong>{jugadora.nombre}</strong>
-              <span>{jugadora.posiciones.join("/")}</span>
-            </JugadorCard>
+            <Zona key={index}>
+              <JugadoraNombre>{jugadora.nombre}</JugadoraNombre>
+              <JugadoraPosicion>{jugadora.posiciones.join(" / ")}</JugadoraPosicion>
+            </Zona>
           ))}
         </Grid>
-      </CanchaContainer>
-
+      </Court>
       <Panel>
         <h2>Controles</h2>
-        <Boton onClick={rotar}>🔁 Rotar</Boton>
+        <Button onClick={rotar}>🔁 Rotar</Button>
 
-        <h3>Motivo de Punto Ganado</h3>
-        <Select value={motivoGanado} onChange={(e) => setMotivoGanado(e.target.value)}>
+        <Label>Motivo de Punto Ganado</Label>
+        <Select
+          value={motivoGanado}
+          onChange={(e) => setMotivoGanado(e.target.value)}
+        >
           <option value="">Selecciona un motivo</option>
           {motivosGanados.map((motivo) => (
             <option key={motivo} value={motivo}>{motivo}</option>
           ))}
         </Select>
 
-        <h3>Motivo de Punto Perdido</h3>
-        <Select value={motivoPerdido} onChange={(e) => setMotivoPerdido(e.target.value)}>
+        <Label>Motivo de Punto Perdido</Label>
+        <Select
+          value={motivoPerdido}
+          onChange={(e) => setMotivoPerdido(e.target.value)}
+        >
           <option value="">Selecciona un motivo</option>
           {motivosPerdidos.map((motivo) => (
             <option key={motivo} value={motivo}>{motivo}</option>
           ))}
         </Select>
 
-        <h3>Jugadora Ganadora (si aplica)</h3>
-        <Select value={jugadoraGanadora || ""} onChange={(e) => setJugadoraGanadora(e.target.value)}>
+        <Label>Jugadora Destacada</Label>
+        <Select
+          value={jugadoraGanadora || ""}
+          onChange={(e) => setJugadoraGanadora(e.target.value)}
+        >
           <option value="">Ninguna</option>
           {formacion.map((jugadora, index) => (
             <option key={index} value={jugadora.nombre}>{jugadora.nombre}</option>
           ))}
         </Select>
 
-        <Boton color="green" onClick={() => cargarResultado("ganado")}>✔ Punto ganado</Boton>
-        <Boton color="red" onClick={() => cargarResultado("perdido")}>❌ Punto perdido</Boton>
-
-        <h3>Historial</h3>
-        <Historial>
-          {puntos.map((p, i) => (
-            <li key={i}>
-              R{p.rotacion + 1}: {p.resultado === "ganado" ? "✔ Ganado" : "❌ Perdido"} - 
-              {p.resultado === "ganado" ? ` ${p.motivoGanado}` : ` ${p.motivoPerdido}`}
-              {p.resultado === "ganado" && p.jugadoraGanadora ? ` - ${p.jugadoraGanadora}` : ""}
-            </li>
-          ))}
-        </Historial>
+        <Button color="#22c55e" onClick={() => cargarResultado("ganado")}>
+          ✔ Punto Ganado
+        </Button>
+        <Button color="#ef4444" onClick={() => cargarResultado("perdido")}>
+          ✖ Punto Perdido
+        </Button>
       </Panel>
     </Container>
   );
