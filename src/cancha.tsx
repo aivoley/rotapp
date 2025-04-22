@@ -1,131 +1,131 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 
-const jugadores = [
-  { nombre: "Ana", posicion: "Armadora" },
-  { nombre: "Belén", posicion: "Central" },
-  { nombre: "Carla", posicion: "Central" },
-  { nombre: "Delfina", posicion: "Punta" },
-  { nombre: "Eva", posicion: "Punta" },
-  { nombre: "Flor", posicion: "Opuesta" },
-  { nombre: "Gaby", posicion: "Líbero" }
+type Jugadora = {
+  nombre: string;
+  posiciones: string[];
+};
+
+type Punto = {
+  rotacion: number;
+  resultado: "ganado" | "perdido";
+  motivoGanado?: string;
+  motivoPerdido?: string;
+  jugadoraGanadora?: string | null;
+};
+
+const jugadorasBase: Jugadora[] = [
+  { nombre: "Candela", posiciones: ["Armadora"] },
+  { nombre: "Miranda", posiciones: ["Armadora"] },
+  { nombre: "Florencia", posiciones: ["Central", "Opuesta"] },
+  { nombre: "Abril M.", posiciones: ["Opuesta"] },
+  { nombre: "Micaela", posiciones: ["Punta"] },
+  { nombre: "Milena", posiciones: ["Punta"] },
+  { nombre: "Irina", posiciones: ["Punta", "Central"] },
+  { nombre: "Sol", posiciones: ["Punta"] },
+  { nombre: "Camila", posiciones: ["Central"] },
+  { nombre: "Josefina", posiciones: ["Central"] },
+  { nombre: "Abril S.", posiciones: ["Punta"] },
+  { nombre: "Julieta A", posiciones: ["Punta", "Líbero"] },
+  { nombre: "Julieta S", posiciones: ["Opuesta", "Líbero"] },
+  { nombre: "Carolina", posiciones: ["Punta", "Líbero"] },
+  { nombre: "Flavia", posiciones: ["Punta", "Líbero"] },
+  { nombre: "Agustina", posiciones: ["Punta"] },
 ];
 
-const Cancha = () => {
-  const [formacion, setFormacion] = useState({
-    1: null,
-    2: null,
-    3: null,
-    4: null,
-    5: null,
-    6: null
-  });
+const motivosGanados = ["ACE", "ATAQUE", "BLOQUEO", "TOQUE", "ERROR RIVAL"];
+const motivosPerdidos = [
+  "ERROR DE SAQUE",
+  "ERROR DE ATAQUE",
+  "BLOQUEO RIVAL",
+  "ERROR NO FORZADO",
+  "ERROR DE RECEPCION",
+  "ATAQUE RIVAL",
+  "SAQUE RIVAL",
+];
 
-  const [seleccionA, setSeleccionA] = useState<number | null>(null);
+export default function Simulador() {
+  const [formacion, setFormacion] = useState<Jugadora[]>(jugadorasBase.slice(0, 6));
+  const [rotacion, setRotacion] = useState(0);
+  const [puntos, setPuntos] = useState<Punto[]>([]);
+  const [motivoGanado, setMotivoGanado] = useState("");
+  const [motivoPerdido, setMotivoPerdido] = useState("");
+  const [jugadoraGanadora, setJugadoraGanadora] = useState<string | null>(null);
 
-  const asignarJugadora = (zona: string, nombre: string) => {
-    const seleccionada = jugadores.find(j => j.nombre === nombre);
-    setFormacion(prev => ({ ...prev, [zona]: seleccionada }));
+  const rotar = () => {
+    setFormacion(prev => [prev[5], ...prev.slice(0, 5)]);
+    setRotacion(r => (r + 1) % 6);
   };
 
-  const intercambiar = (zona: number) => {
-    if (seleccionA === null) {
-      setSeleccionA(zona);
-    } else {
-      setFormacion(prev => {
-        const nueva = { ...prev };
-        [nueva[seleccionA], nueva[zona]] = [nueva[zona], nueva[seleccionA]];
-        return nueva;
-      });
-      setSeleccionA(null);
-    }
-  };
-
-  const reiniciarFormacion = () => {
-    setFormacion({ 1: null, 2: null, 3: null, 4: null, 5: null, 6: null });
+  const cargarResultado = (resultado: "ganado" | "perdido") => {
+    const punto: Punto = {
+      rotacion,
+      resultado,
+      motivoGanado: resultado === "ganado" ? motivoGanado : undefined,
+      motivoPerdido: resultado === "perdido" ? motivoPerdido : undefined,
+      jugadoraGanadora: resultado === "ganado" ? jugadoraGanadora : null,
+    };
+    setPuntos(prev => [...prev, punto]);
   };
 
   return (
     <Container>
-      <Formacion>
-        {Object.keys(formacion).map((zona) => (
-          <Zona
-            key={zona}
-            onClick={() => intercambiar(Number(zona))}
-            ocupado={formacion[zona]}
-          >
-            {formacion[zona] ? (
-              <p>{formacion[zona]?.nombre} ({formacion[zona]?.posicion})</p>
-            ) : (
-              <span>Vacío</span>
-            )}
-          </Zona>
-        ))}
-      </Formacion>
-      
-      <Botones>
-        <Button onClick={reiniciarFormacion}>Reiniciar formación</Button>
-        
-        <div>
-          {Object.keys(formacion).map((zona) => (
-            <select
-              key={zona}
-              onChange={(e) => asignarJugadora(zona, e.target.value)}
-              value={formacion[zona]?.nombre || ""}
-            >
-              <option value="">Seleccionar jugadora</option>
-              {jugadores.map((jugadora) => (
-                <option key={jugadora.nombre} value={jugadora.nombre}>
-                  {jugadora.nombre} ({jugadora.posicion})
-                </option>
-              ))}
-            </select>
+      <CanchaContainer>
+        <h1>Rotación {rotacion + 1}</h1>
+        <Grid>
+          {formacion.map((jugadora, index) => (
+            <JugadorCard key={index}>
+              <strong>{jugadora.nombre}</strong>
+              <span>{jugadora.posiciones.join("/")}</span>
+            </JugadorCard>
           ))}
-        </div>
-      </Botones>
+        </Grid>
+      </CanchaContainer>
+
+      <Panel>
+        <h2>Controles</h2>
+        <Boton onClick={rotar}>🔁 Rotar</Boton>
+
+        <h3>Motivo de Punto Ganado</h3>
+        <Select value={motivoGanado} onChange={(e) => setMotivoGanado(e.target.value)}>
+          <option value="">Selecciona un motivo</option>
+          {motivosGanados.map((motivo) => (
+            <option key={motivo} value={motivo}>{motivo}</option>
+          ))}
+        </Select>
+
+        <h3>Motivo de Punto Perdido</h3>
+        <Select value={motivoPerdido} onChange={(e) => setMotivoPerdido(e.target.value)}>
+          <option value="">Selecciona un motivo</option>
+          {motivosPerdidos.map((motivo) => (
+            <option key={motivo} value={motivo}>{motivo}</option>
+          ))}
+        </Select>
+
+        <h3>Jugadora Ganadora (si aplica)</h3>
+        <Select value={jugadoraGanadora || ""} onChange={(e) => setJugadoraGanadora(e.target.value)}>
+          <option value="">Ninguna</option>
+          {formacion.map((jugadora, index) => (
+            <option key={index} value={jugadora.nombre}>{jugadora.nombre}</option>
+          ))}
+        </Select>
+
+        <Boton color="green" onClick={() => cargarResultado("ganado")}>✔ Punto ganado</Boton>
+        <Boton color="red" onClick={() => cargarResultado("perdido")}>❌ Punto perdido</Boton>
+
+        <h3>Historial</h3>
+        <Historial>
+          {puntos.map((p, i) => (
+            <li key={i}>
+              R{p.rotacion + 1}: {p.resultado === "ganado" ? "✔ Ganado" : "❌ Perdido"} - 
+              {p.resultado === "ganado" ? ` ${p.motivoGanado}` : ` ${p.motivoPerdido}`}
+              {p.resultado === "ganado" && p.jugadoraGanadora ? ` - ${p.jugadoraGanadora}` : ""}
+            </li>
+          ))}
+        </Historial>
+      </Panel>
     </Container>
   );
-};
+}
 
-const Container = styled.div`
-  padding: 20px;
-  text-align: center;
-`;
 
-const Formacion = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  margin-bottom: 20px;
-`;
-
-const Zona = styled.div<{ ocupado: any }>`
-  width: 100px;
-  height: 100px;
-  border: 2px solid black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  background-color: ${({ ocupado }) => (ocupado ? "#d1e7dd" : "#f8d7da")};
-  color: ${({ ocupado }) => (ocupado ? "#0f5132" : "#721c24")};
-`;
-
-const Botones = styled.div`
-  margin-top: 20px;
-`;
-
-const Button = styled.button`
-  padding: 10px 20px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  cursor: pointer;
-  margin: 5px;
-  &:hover {
-    background-color: #218838;
-  }
-`;
-
-export default Cancha;
