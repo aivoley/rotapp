@@ -1,12 +1,4 @@
 import { useState } from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 
 const jugadorasBase = [
   { nombre: "Candela", posiciones: ["Armadora"] },
@@ -27,92 +19,39 @@ const jugadorasBase = [
   { nombre: "Agustina", posiciones: ["Punta"] },
 ];
 
-const motivosGanado = ["ACE", "ATAQUE", "BLOQUEO", "TOQUE", "ERROR RIVAL"];
-const motivosPerdido = [
-  "ERROR DE SAQUE",
-  "ERROR DE ATAQUE",
-  "BLOQUEO RIVAL",
-  "ERROR NO FORZADO",
-  "ERROR DE RECEPCION",
-  "ATAQUE RIVAL",
-  "BLOQUEO RIVAL",
-  "SAQUE RIVAL",
+const motivosGanados = [
+  "ACE", "ATAQUE", "BLOQUEO", "TOQUE", "ERROR RIVAL"
 ];
+
+const motivosPerdidos = [
+  "ERROR DE SAQUE", "ERROR DE ATAQUE", "BLOQUEO RIVAL", "ERROR NO FORZADO", "ERROR DE RECEPCION", "ATAQUE RIVAL", "BLOQUEO RIVAL", "SAQUE RIVAL"
+];
+
+const zonas = ["Zona 1", "Zona 6", "Zona 5", "Zona 4", "Zona 3", "Zona 2"];
 
 export default function Simulador() {
   const [formacion, setFormacion] = useState(jugadorasBase.slice(0, 6));
   const [rotacion, setRotacion] = useState(0);
   const [puntos, setPuntos] = useState([]);
-  const [historico, setHistorico] = useState([]);
-  const [tipoPunto, setTipoPunto] = useState("ganado");
-  const [motivo, setMotivo] = useState("");
-  const [jugadoraPunto, setJugadoraPunto] = useState("");
-  const [equipoNombre, setEquipoNombre] = useState("Mi Equipo");
-  const [fechaPartido, setFechaPartido] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [motivoGanado, setMotivoGanado] = useState("");
+  const [motivoPerdido, setMotivoPerdido] = useState("");
+  const [jugadoraGanadora, setJugadoraGanadora] = useState(null);
 
   const rotar = () => {
-    setFormacion((prev) => [prev[5], ...prev.slice(0, 5)]);
-    setRotacion((r) => (r + 1) % 6);
+    setFormacion(prev => [prev[5], ...prev.slice(0, 5)]);
+    setRotacion(r => (r + 1) % 6);
   };
 
-  const cargarResultado = () => {
-    if (!motivo) return alert("Seleccioná un motivo.");
-    const nuevoPunto = {
+  const cargarResultado = (resultado) => {
+    const punto = {
       rotacion,
-      resultado: tipoPunto,
-      motivo,
-      jugadora: tipoPunto === "ganado" ? jugadoraPunto : null,
+      resultado,
+      motivoGanado,
+      motivoPerdido,
+      jugadoraGanadora,
     };
-    setPuntos((prev) => [...prev, nuevoPunto]);
-    setHistorico((prev) => [...prev, nuevoPunto]);
-    setMotivo("");
-    setJugadoraPunto("");
+    setPuntos(prev => [...prev, punto]);
   };
-
-  const exportarMatch = () => {
-    const matchData = {
-      equipo: equipoNombre,
-      fecha: fechaPartido,
-      datos: historico,
-    };
-    const blob = new Blob([JSON.stringify(matchData)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `match_${equipoNombre}_${fechaPartido}.json`;
-    a.click();
-  };
-
-  const importarMatch = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const data = JSON.parse(reader.result);
-      setEquipoNombre(data.equipo || "Equipo Importado");
-      setFechaPartido(data.fecha || new Date().toISOString().split("T")[0]);
-      setHistorico(data.datos || []);
-      setPuntos(data.datos || []);
-    };
-    reader.readAsText(file);
-  };
-
-  const estadisticas = puntos.reduce((acc, punto) => {
-    const clave = `R${punto.rotacion + 1}`;
-    acc[clave] = acc[clave] || { ganado: 0, perdido: 0 };
-    acc[clave][punto.resultado]++;
-    return acc;
-  }, {});
-
-  const dataEstadisticas = Object.entries(estadisticas).map(([rot, val]) => ({
-    rotacion: rot,
-    ganado: val.ganado || 0,
-    perdido: val.perdido || 0,
-  }));
 
   return (
     <div className="flex flex-row w-full h-screen bg-green-100">
@@ -135,7 +74,7 @@ export default function Simulador() {
         </div>
       </div>
 
-      <div className="w-96 bg-white p-4 border-l shadow-xl overflow-y-auto">
+      <div className="w-80 bg-white p-4 border-l shadow-xl">
         <h2 className="text-xl font-semibold mb-2">Controles</h2>
         <button
           onClick={rotar}
@@ -143,128 +82,48 @@ export default function Simulador() {
         >
           🔁 Rotar
         </button>
-
-        <h3 className="mt-4 font-semibold">Nuevo Punto</h3>
-        <div className="mb-2">
-          <label className="block text-sm font-medium">Resultado</label>
+        <div className="flex flex-col gap-2 mb-4">
+          <h3 className="font-semibold">Motivo de Punto Ganado</h3>
           <select
-            className="w-full border p-1 rounded"
-            value={tipoPunto}
-            onChange={(e) => setTipoPunto(e.target.value)}
+            value={motivoGanado}
+            onChange={(e) => setMotivoGanado(e.target.value)}
+            className="p-2 border rounded"
           >
-            <option value="ganado">✔ Ganado</option>
-            <option value="perdido">❌ Perdido</option>
+            <option value="">Selecciona un motivo</option>
+            {motivosGanados.map((motivo) => (
+              <option key={motivo} value={motivo}>{motivo}</option>
+            ))}
           </select>
-        </div>
-
-        <div className="mb-2">
-          <label className="block text-sm font-medium">Motivo</label>
+          <h3 className="font-semibold">Motivo de Punto Perdido</h3>
           <select
-            className="w-full border p-1 rounded"
-            value={motivo}
-            onChange={(e) => setMotivo(e.target.value)}
+            value={motivoPerdido}
+            onChange={(e) => setMotivoPerdido(e.target.value)}
+            className="p-2 border rounded"
           >
-            <option value="">Seleccionar</option>
-            {(tipoPunto === "ganado" ? motivosGanado : motivosPerdido).map(
-              (m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              )
-            )}
+            <option value="">Selecciona un motivo</option>
+            {motivosPerdidos.map((motivo) => (
+              <option key={motivo} value={motivo}>{motivo}</option>
+            ))}
           </select>
-        </div>
-
-        {tipoPunto === "ganado" && (
-          <div className="mb-2">
-            <label className="block text-sm font-medium">Jugadora</label>
-            <select
-              className="w-full border p-1 rounded"
-              value={jugadoraPunto}
-              onChange={(e) => setJugadoraPunto(e.target.value)}
-            >
-              <option value="">Sin asignar</option>
-              {jugadorasBase.map((j) => (
-                <option key={j.nombre} value={j.nombre}>
-                  {j.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <button
-          onClick={cargarResultado}
-          className="bg-green-600 text-white w-full p-2 rounded hover:bg-green-700"
-        >
-          ➕ Agregar Punto
-        </button>
-
-        <h3 className="mt-4 font-semibold">Historial</h3>
-        <ul className="text-sm max-h-40 overflow-y-auto space-y-1">
-          {puntos.map((p, i) => (
-            <li key={i} className="flex flex-col border rounded p-1 bg-gray-50">
-              <div>
-                <strong>R{p.rotacion + 1}</strong> —{" "}
-                {p.resultado === "ganado" ? "✔ Ganado" : "❌ Perdido"}
-              </div>
-              <div className="text-xs text-gray-700">
-                Motivo: <em>{p.motivo}</em>
-                {p.resultado === "ganado" && p.jugadora
-                  ? ` — Jugadora: ${p.jugadora}`
-                  : ""}
-              </div>
-            </li>
-          ))}
-        </ul>
-
-        <h3 className="mt-4 font-semibold">Estadísticas</h3>
-        <div className="w-full h-48">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={dataEstadisticas}>
-              <XAxis dataKey="rotacion" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="ganado" fill="#22c55e" />
-              <Bar dataKey="perdido" fill="#ef4444" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <h3 className="mt-4 font-semibold">Match</h3>
-        <div className="mb-2">
-          <label className="text-sm font-medium">Equipo</label>
-          <input
-            value={equipoNombre}
-            onChange={(e) => setEquipoNombre(e.target.value)}
-            className="w-full border p-1 rounded"
-          />
-        </div>
-        <div className="mb-2">
-          <label className="text-sm font-medium">Fecha</label>
-          <input
-            type="date"
-            value={fechaPartido}
-            onChange={(e) => setFechaPartido(e.target.value)}
-            className="w-full border p-1 rounded"
-          />
+          <h3 className="font-semibold">Jugadora Ganadora (si aplica)</h3>
+          <select
+            value={jugadoraGanadora}
+            onChange={(e) => setJugadoraGanadora(e.target.value)}
+            className="p-2 border rounded"
+          >
+            <option value={null}>Ninguna</option>
+            {formacion.map((jugadora, index) => (
+              <option key={index} value={jugadora.nombre}>{jugadora.nombre}</option>
+            ))}
+          </select>
         </div>
         <div className="flex flex-col gap-2">
           <button
-            onClick={exportarMatch}
-            className="bg-gray-700 text-white p-2 rounded hover:bg-gray-800"
+            onClick={() => cargarResultado("ganado")}
+            className="bg-green-500 text-white p-2 rounded hover:bg-green-600"
           >
-            ⬇ Exportar Match
+            ✔ Punto ganado
           </button>
-          <input
-            type="file"
-            accept="application/json"
-            onChange={importarMatch}
-            className="text-sm"
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
+          <button
+            onClick={() => cargarResultado("perdido")}
+            className="bg-red-500 text...
