@@ -1,14 +1,24 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import SeleccionFormacion from "./SeleccionFormacion";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import SelectEquipo from "./SelectEquipo";
 import Simulacion from "./Simulacion";
+
+// Componente que representa el botón para comenzar el partido
+import ComenzarPartidoButton from "./ComenzarPartidoButton";
 
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
-        <Route path="/" element={<SeleccionFormacion />} />
+        <Route
+          path="/"
+          element={
+            <SelectEquipo />
+          }
+        />
         <Route path="/simulacion" element={<Simulacion />} />
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 }
+
+export default App;
