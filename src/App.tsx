@@ -1,5 +1,4 @@
 import { useState } from "react";
-import styled from "styled-components";
 import {
   BarChart,
   Bar,
@@ -9,32 +8,23 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const zonasOrdenadas = [
-  { id: 4, label: "Zona 4" },
-  { id: 3, label: "Zona 3" },
-  { id: 2, label: "Zona 2" },
-  { id: 5, label: "Zona 5" },
-  { id: 6, label: "Zona 6" },
-  { id: 1, label: "Zona 1" },
-];
-
 const jugadorasBase = [
-  { id: 1, nombre: "Candela", posiciones: ["Armadora"] },
-  { id: 2, nombre: "Miranda", posiciones: ["Armadora"] },
-  { id: 3, nombre: "Florencia", posiciones: ["Central", "Opuesta"] },
-  { id: 4, nombre: "Abril M.", posiciones: ["Opuesta"] },
-  { id: 5, nombre: "Micaela", posiciones: ["Punta"] },
-  { id: 6, nombre: "Milena", posiciones: ["Punta"] },
-  { id: 7, nombre: "Irina", posiciones: ["Punta", "Central"] },
-  { id: 8, nombre: "Sol", posiciones: ["Punta"] },
-  { id: 9, nombre: "Camila", posiciones: ["Central"] },
-  { id: 10, nombre: "Josefina", posiciones: ["Central"] },
-  { id: 11, nombre: "Abril S.", posiciones: ["Punta"] },
-  { id: 12, nombre: "Julieta A", posiciones: ["Punta", "Líbero"] },
-  { id: 13, nombre: "Julieta S", posiciones: ["Opuesta", "Líbero"] },
-  { id: 14, nombre: "Carolina", posiciones: ["Punta", "Líbero"] },
-  { id: 15, nombre: "Flavia", posiciones: ["Punta", "Líbero"] },
-  { id: 16, nombre: "Agustina", posiciones: ["Punta"] },
+  { nombre: "Candela", posiciones: ["Armadora"] },
+  { nombre: "Miranda", posiciones: ["Armadora"] },
+  { nombre: "Florencia", posiciones: ["Central", "Opuesta"] },
+  { nombre: "Abril M.", posiciones: ["Opuesta"] },
+  { nombre: "Micaela", posiciones: ["Punta"] },
+  { nombre: "Milena", posiciones: ["Punta"] },
+  { nombre: "Irina", posiciones: ["Punta", "Central"] },
+  { nombre: "Sol", posiciones: ["Punta"] },
+  { nombre: "Camila", posiciones: ["Central"] },
+  { nombre: "Josefina", posiciones: ["Central"] },
+  { nombre: "Abril S.", posiciones: ["Punta"] },
+  { nombre: "Julieta A", posiciones: ["Punta", "Líbero"] },
+  { nombre: "Julieta S", posiciones: ["Opuesta", "Líbero"] },
+  { nombre: "Carolina", posiciones: ["Punta", "Líbero"] },
+  { nombre: "Flavia", posiciones: ["Punta", "Líbero"] },
+  { nombre: "Agustina", posiciones: ["Punta"] },
 ];
 
 const motivosGanado = ["ACE", "ATAQUE", "BLOQUEO", "TOQUE", "ERROR RIVAL"];
@@ -45,125 +35,11 @@ const motivosPerdido = [
   "ERROR NO FORZADO",
   "ERROR DE RECEPCION",
   "ATAQUE RIVAL",
+  "BLOQUEO RIVAL",
   "SAQUE RIVAL",
 ];
 
-// Styled Components
-const Layout = styled.div`
-  display: flex;
-  height: 100vh;
-  background-color: #dcfce7;
-`;
-
-const CanchaContainer = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`;
-
-const RotacionTitle = styled.h1`
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 1rem;
-`;
-
-const Cancha = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  gap: 0.5rem;
-  width: 600px;
-  height: 400px;
-  background: white;
-  padding: 1rem;
-  border-radius: 12px;
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-`;
-
-const Zona = styled.div<{ seleccionada: boolean }>`
-  background: #fefce8;
-  border-radius: 8px;
-  padding: 0.5rem;
-  border: ${(props) => (props.seleccionada ? "4px solid #3b82f6" : "1px solid #ccc")};
-  cursor: pointer;
-  text-align: center;
-  &:hover {
-    background: #fef9c3;
-  }
-`;
-
-const BotonRotar = styled.button`
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  &:hover {
-    background: #1d4ed8;
-  }
-`;
-
-const PanelDerecho = styled.div`
-  width: 380px;
-  background: white;
-  padding: 1rem;
-  border-left: 1px solid #ccc;
-  overflow-y: auto;
-`;
-
-const TituloPanel = styled.h2`
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.5rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 0.5rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-`;
-
-const Boton = styled.button`
-  background: #16a34a;
-  color: white;
-  padding: 0.5rem;
-  width: 100%;
-  margin-top: 0.5rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  &:hover {
-    background: #15803d;
-  }
-`;
-
-const BotonNuevoPartido = styled.button`
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  background: #f59e0b;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  &:hover {
-    background: #d97706;
-  }
-`;
-
-export default function App() {
+export default function Simulador() {
   const [formacion, setFormacion] = useState(jugadorasBase.slice(0, 6));
   const [rotacion, setRotacion] = useState(0);
   const [puntos, setPuntos] = useState([]);
@@ -175,27 +51,10 @@ export default function App() {
   const [fechaPartido, setFechaPartido] = useState(
     new Date().toISOString().split("T")[0]
   );
-  const [seleccionada, setSeleccionada] = useState<number | null>(null);
-  const [setActual, setSetActual] = useState(1);
 
   const rotar = () => {
-    const nueva = [...formacion];
-    nueva.unshift(nueva.pop()!);
-    setFormacion(nueva);
+    setFormacion((prev) => [prev[5], ...prev.slice(0, 5)]);
     setRotacion((r) => (r + 1) % 6);
-  };
-
-  const intercambiar = (index: number) => {
-    if (seleccionada === null) {
-      setSeleccionada(index);
-    } else {
-      const nueva = [...formacion];
-      const temp = nueva[index];
-      nueva[index] = nueva[seleccionada];
-      nueva[seleccionada] = temp;
-      setFormacion(nueva);
-      setSeleccionada(null);
-    }
   };
 
   const cargarResultado = () => {
@@ -212,12 +71,42 @@ export default function App() {
     setJugadoraPunto("");
   };
 
+  const exportarMatch = () => {
+    const matchData = {
+      equipo: equipoNombre,
+      fecha: fechaPartido,
+      datos: historico,
+    };
+    const blob = new Blob([JSON.stringify(matchData)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `match_${equipoNombre}_${fechaPartido}.json`;
+    a.click();
+  };
+
+  const importarMatch = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const data = JSON.parse(reader.result);
+      setEquipoNombre(data.equipo || "Equipo Importado");
+      setFechaPartido(data.fecha || new Date().toISOString().split("T")[0]);
+      setHistorico(data.datos || []);
+      setPuntos(data.datos || []);
+    };
+    reader.readAsText(file);
+  };
+
   const estadisticas = puntos.reduce((acc, punto) => {
     const clave = `R${punto.rotacion + 1}`;
     acc[clave] = acc[clave] || { ganado: 0, perdido: 0 };
     acc[clave][punto.resultado]++;
     return acc;
-  }, {} as Record<string, { ganado: number; perdido: number }>);
+  }, {});
 
   const dataEstadisticas = Object.entries(estadisticas).map(([rot, val]) => ({
     rotacion: rot,
@@ -225,126 +114,157 @@ export default function App() {
     perdido: val.perdido || 0,
   }));
 
-  const agregarJugadora = (jugadora: { nombre: string; posiciones: string[] }) => {
-    setFormacion((prev) => [...prev, jugadora]);
-  };
-
-  const quitarJugadora = (index: number) => {
-    setFormacion((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const nuevoPartido = () => {
-    setFormacion(jugadorasBase.slice(0, 6));
-    setRotacion(0);
-    setPuntos([]);
-    setHistorico([]);
-    setSetActual(1);
-  };
-
-  const siguienteSet = () => {
-    if (setActual < 5) setSetActual(setActual + 1);
-  };
-
-  const resultadosSets = Array.from({ length: 5 }, (_, i) => ({
-    set: i + 1,
-    resultado: "Ganado", // Aquí puedes añadir la lógica para los resultados
-  }));
-
   return (
-    <Layout>
-      <CanchaContainer>
-        <RotacionTitle>Rotación {rotacion + 1}</RotacionTitle>
-        <Cancha>
-          {zonasOrdenadas.map((zona, index) => {
-            const jugadora = formacion.find((j) => j.id === zona.id);
-            return (
-              <Zona
-                key={zona.id}
-                seleccionada={seleccionada === index}
-                onClick={() => intercambiar(index)}
-              >
-                <div style={{ fontSize: "10px", color: "#888" }}>{zona.label}</div>
-                <div style={{ fontWeight: 600 }}>{jugadora?.nombre}</div>
-                <div style={{ fontSize: "12px", color: "#666" }}>
-                  {jugadora?.posiciones.join(" / ")}
+    <div className="flex flex-row w-full h-screen bg-green-100">
+      <div className="flex flex-col justify-center items-center flex-1">
+        <h1 className="text-2xl font-bold mb-4">Rotación {rotacion + 1}</h1>
+        <div className="grid grid-cols-3 grid-rows-2 gap-4 w-[600px] h-[400px]">
+          {formacion.map((jugadora, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-center border rounded-xl bg-white text-center shadow p-2"
+            >
+              <div>
+                <strong>{jugadora.nombre}</strong>
+                <div className="text-xs text-gray-500">
+                  {jugadora.posiciones.join("/")}
                 </div>
-              </Zona>
-            );
-          })}
-        </Cancha>
-        <BotonRotar onClick={rotar}>🔁 Rotar</BotonRotar>
-        <BotonNuevoPartido onClick={nuevoPartido}>Nuevo Partido</BotonNuevoPartido>
-        <button onClick={siguienteSet}>Siguiente Set</button>
-      </CanchaContainer>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-      <PanelDerecho>
-        <TituloPanel>Estadísticas de la Rotación</TituloPanel>
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={dataEstadisticas}>
-            <XAxis dataKey="rotacion" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="ganado" fill="#16a34a" />
-            <Bar dataKey="perdido" fill="#dc2626" />
-          </BarChart>
-        </ResponsiveContainer>
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            cargarResultado();
-          }}
+      <div className="w-96 bg-white p-4 border-l shadow-xl overflow-y-auto">
+        <h2 className="text-xl font-semibold mb-2">Controles</h2>
+        <button
+          onClick={rotar}
+          className="w-full bg-blue-600 text-white p-2 rounded mb-2 hover:bg-blue-700"
         >
-          <Select
+          🔁 Rotar
+        </button>
+
+        <h3 className="mt-4 font-semibold">Nuevo Punto</h3>
+        <div className="mb-2">
+          <label className="block text-sm font-medium">Resultado</label>
+          <select
+            className="w-full border p-1 rounded"
             value={tipoPunto}
             onChange={(e) => setTipoPunto(e.target.value)}
           >
-            <option value="ganado">Punto Ganado</option>
-            <option value="perdido">Punto Perdido</option>
-          </Select>
-          <Select
+            <option value="ganado">✔ Ganado</option>
+            <option value="perdido">❌ Perdido</option>
+          </select>
+        </div>
+
+        <div className="mb-2">
+          <label className="block text-sm font-medium">Motivo</label>
+          <select
+            className="w-full border p-1 rounded"
             value={motivo}
             onChange={(e) => setMotivo(e.target.value)}
           >
-            <option value="">Motivo</option>
+            <option value="">Seleccionar</option>
             {(tipoPunto === "ganado" ? motivosGanado : motivosPerdido).map(
-              (motivo) => (
-                <option key={motivo} value={motivo}>
-                  {motivo}
+              (m) => (
+                <option key={m} value={m}>
+                  {m}
                 </option>
               )
             )}
-          </Select>
+          </select>
+        </div>
 
-          {tipoPunto === "ganado" && (
-            <Select
+        {tipoPunto === "ganado" && (
+          <div className="mb-2">
+            <label className="block text-sm font-medium">Jugadora</label>
+            <select
+              className="w-full border p-1 rounded"
               value={jugadoraPunto}
               onChange={(e) => setJugadoraPunto(e.target.value)}
             >
-              <option value="">Seleccionar Jugadora</option>
-              {formacion.map((jugadora) => (
-                <option key={jugadora.id} value={jugadora.nombre}>
-                  {jugadora.nombre}
+              <option value="">Sin asignar</option>
+              {jugadorasBase.map((j) => (
+                <option key={j.nombre} value={j.nombre}>
+                  {j.nombre}
                 </option>
               ))}
-            </Select>
-          )}
+            </select>
+          </div>
+        )}
 
-          <Boton type="submit">Registrar Punto</Boton>
-        </form>
+        <button
+          onClick={cargarResultado}
+          className="bg-green-600 text-white w-full p-2 rounded hover:bg-green-700"
+        >
+          ➕ Agregar Punto
+        </button>
 
-        <div>
-          <h3>Resultados de los Sets:</h3>
-          <ul>
-            {resultadosSets.map((result) => (
-              <li key={result.set}>
-                Set {result.set}: {result.resultado}
-              </li>
-            ))}
-          </ul>
+        <h3 className="mt-4 font-semibold">Historial</h3>
+        <ul className="text-sm max-h-40 overflow-y-auto space-y-1">
+          {puntos.map((p, i) => (
+            <li key={i} className="flex flex-col border rounded p-1 bg-gray-50">
+              <div>
+                <strong>R{p.rotacion + 1}</strong> —{" "}
+                {p.resultado === "ganado" ? "✔ Ganado" : "❌ Perdido"}
+              </div>
+              <div className="text-xs text-gray-700">
+                Motivo: <em>{p.motivo}</em>
+                {p.resultado === "ganado" && p.jugadora
+                  ? ` — Jugadora: ${p.jugadora}`
+                  : ""}
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <h3 className="mt-4 font-semibold">Estadísticas</h3>
+        <div className="w-full h-48">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={dataEstadisticas}>
+              <XAxis dataKey="rotacion" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="ganado" fill="#22c55e" />
+              <Bar dataKey="perdido" fill="#ef4444" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-      </PanelDerecho>
-    </Layout>
+
+        <h3 className="mt-4 font-semibold">Match</h3>
+        <div className="mb-2">
+          <label className="text-sm font-medium">Equipo</label>
+          <input
+            value={equipoNombre}
+            onChange={(e) => setEquipoNombre(e.target.value)}
+            className="w-full border p-1 rounded"
+          />
+        </div>
+        <div className="mb-2">
+          <label className="text-sm font-medium">Fecha</label>
+          <input
+            type="date"
+            value={fechaPartido}
+            onChange={(e) => setFechaPartido(e.target.value)}
+            className="w-full border p-1 rounded"
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={exportarMatch}
+            className="bg-gray-700 text-white p-2 rounded hover:bg-gray-800"
+          >
+            ⬇ Exportar Match
+          </button>
+          <input
+            type="file"
+            accept="application/json"
+            onChange={importarMatch}
+            className="text-sm"
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
