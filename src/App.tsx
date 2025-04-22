@@ -244,54 +244,61 @@ export default function App() {
       </CanchaContainer>
 
       <PanelDerecho>
-        <TituloPanel>Controles</TituloPanel>
+        <TituloPanel>Estadísticas de la Rotación</TituloPanel>
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={dataEstadisticas}>
+            <XAxis dataKey="rotacion" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="ganado" fill="#16a34a" />
+            <Bar dataKey="perdido" fill="#dc2626" />
+          </BarChart>
+        </ResponsiveContainer>
 
-        <label>Resultado</label>
-        <Select value={tipoPunto} onChange={(e) => setTipoPunto(e.target.value)}>
-          <option value="ganado">✔ Ganado</option>
-          <option value="perdido">❌ Perdido</option>
-        </Select>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            cargarResultado();
+          }}
+        >
+          <Select
+            value={tipoPunto}
+            onChange={(e) => setTipoPunto(e.target.value)}
+          >
+            <option value="ganado">Punto Ganado</option>
+            <option value="perdido">Punto Perdido</option>
+          </Select>
+          <Select
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+          >
+            <option value="">Motivo</option>
+            {(tipoPunto === "ganado" ? motivosGanado : motivosPerdido).map(
+              (motivo) => (
+                <option key={motivo} value={motivo}>
+                  {motivo}
+                </option>
+              )
+            )}
+          </Select>
 
-        <label>Motivo</label>
-        <Select value={motivo} onChange={(e) => setMotivo(e.target.value)}>
-          <option value="">Seleccionar</option>
-          {(tipoPunto === "ganado" ? motivosGanado : motivosPerdido).map((m) => (
-            <option key={m}>{m}</option>
-          ))}
-        </Select>
-
-        {tipoPunto === "ganado" && (
-          <>
-            <label>Jugadora</label>
+          {tipoPunto === "ganado" && (
             <Select
               value={jugadoraPunto}
               onChange={(e) => setJugadoraPunto(e.target.value)}
             >
-              <option value="">Sin asignar</option>
-              {jugadorasBase.map((j) => (
-                <option key={j.nombre} value={j.nombre}>
-                  {j.nombre}
+              <option value="">Seleccionar Jugadora</option>
+              {formacion.map((jugadora) => (
+                <option key={jugadora.id} value={jugadora.nombre}>
+                  {jugadora.nombre}
                 </option>
               ))}
             </Select>
-          </>
-        )}
-
-        <Boton onClick={cargarResultado}>➕ Agregar Punto</Boton>
-
-        <h3 style={{ marginTop: "1rem" }}>Estadísticas</h3>
-        <div style={{ height: "200px" }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={dataEstadisticas}>
-              <XAxis dataKey="rotacion" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="ganado" fill="#22c55e" />
-              <Bar dataKey="perdido" fill="#ef4444" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+          )}
+          <Boton type="submit">Registrar Punto</Boton>
+        </form>
       </PanelDerecho>
     </Layout>
   );
 }
+
