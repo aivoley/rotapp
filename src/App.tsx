@@ -1,5 +1,5 @@
 import React from "react";
-import Simulador from "./Simulador";
+import Simulador from "assets/Simulador";
 
 function App() {
   return <Simulador />;
