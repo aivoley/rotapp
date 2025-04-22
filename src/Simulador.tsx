@@ -31,9 +31,9 @@ const motivosPerdidos = [
 
 export default function Simulador() {
   // Estado para las jugadoras en la cancha
-  const [formacion, setFormacion] = useState(jugadorasBase.slice(0, 6));
-  // Estado para la rotación actual
-  const [rotacion, setRotacion] = useState(0);
+  const [jugadorasEnCancha, setJugadorasEnCancha] = useState(jugadorasBase.slice(0, 6));
+  // Estado para las jugadoras fuera de la cancha
+  const [jugadorasFuera, setJugadorasFuera] = useState(jugadorasBase.slice(6));
   // Historial de puntos
   const [puntos, setPuntos] = useState([]);
   // Motivo de puntos ganados y perdidos
@@ -49,14 +49,12 @@ export default function Simulador() {
 
   // Función para rotar las jugadoras
   const rotar = () => {
-    setFormacion(prev => [prev[5], ...prev.slice(0, 5)]);
-    setRotacion(r => (r + 1) % 6);
+    setJugadorasEnCancha(prev => [prev[5], ...prev.slice(0, 5)]);
   };
 
   // Función para cargar el resultado de un punto
   const cargarResultado = (resultado) => {
     const punto = {
-      rotacion,
       resultado,
       motivoGanado,
       motivoPerdido,
@@ -73,11 +71,19 @@ export default function Simulador() {
   };
 
   // Función para cambiar las jugadoras manualmente
-  const cambiarJugadoras = () => {
-    const nuevas = prompt("Escribí los nombres de las 6 jugadoras separadas por coma").split(",");
-    const nuevasJugadoras = nuevas.map(nombre => jugadorasBase.find(j => j.nombre === nombre.trim())).filter(Boolean);
-    if (nuevasJugadoras.length === 6) setFormacion(nuevasJugadoras);
-    else alert("Revisá los nombres, debe haber 6 y coincidir con la base");
+  const cambiarJugadoras = (jugadoraEnCanchaIndex: number, jugadoraFueraIndex: number) => {
+    const jugadoraEnCancha = jugadorasEnCancha[jugadoraEnCanchaIndex];
+    const jugadoraFuera = jugadorasFuera[jugadoraFueraIndex];
+
+    const nuevasJugadorasEnCancha = [...jugadorasEnCancha];
+    const nuevasJugadorasFuera = [...jugadorasFuera];
+
+    // Cambiar las jugadoras
+    nuevasJugadorasEnCancha[jugadoraEnCanchaIndex] = jugadoraFuera;
+    nuevasJugadorasFuera[jugadoraFueraIndex] = jugadoraEnCancha;
+
+    setJugadorasEnCancha(nuevasJugadorasEnCancha);
+    setJugadorasFuera(nuevasJugadorasFuera);
   };
 
   // Función para terminar el set y guardar el resultado
@@ -98,9 +104,9 @@ export default function Simulador() {
         </div>
 
         {/* Cancha */}
-        <h1 className="text-2xl font-bold mb-4">Rotación {rotacion + 1}</h1>
+        <h1 className="text-2xl font-bold mb-4">Rotación</h1>
         <div className="grid grid-cols-3 grid-rows-2 gap-4 w-[600px] h-[400px]">
-          {formacion.map((jugadora, index) => (
+          {jugadorasEnCancha.map((jugadora, index) => (
             <div
               key={index}
               className="flex items-center justify-center border rounded-xl bg-white text-center shadow p-2"
@@ -155,7 +161,7 @@ export default function Simulador() {
             className="p-2 border rounded"
           >
             <option value={null}>Ninguna</option>
-            {formacion.map((jugadora, index) => (
+            {jugadorasEnCancha.map((jugadora, index) => (
               <option key={index} value={jugadora.nombre}>{jugadora.nombre}</option>
             ))}
           </select>
@@ -179,35 +185,41 @@ export default function Simulador() {
           >
             ✅ Terminar Set
           </button>
-          <button
-            onClick={cambiarJugadoras}
-            className="bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600 mt-2"
-          >
-            🔄 Cambiar Jugadoras
-          </button>
         </div>
 
-        {/* Historial de Puntos */}
+        {/* Cambiar Jugadoras */}
         <div className="mt-4">
-          <h3 className="font-semibold">Historial de Puntos</h3>
-          <ul className="space-y-2">
-            {puntos.map((punto, index) => (
-              <li key={index} className="text-sm text-gray-700">
-                {punto.resultado === "ganado" ? (
-                  <>
-                    {punto.jugadoraGanadora} anotó un {punto.motivoGanado} (Punto ganado)
-                  </>
-                ) : (
-                  <>
-                    {punto.motivoPerdido} (Punto perdido)
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
+          <h3 className="font-semibold">Cambiar Jugadoras</h3>
+          <div className="flex gap-4">
+            <div>
+              <h4>En cancha</h4>
+              <select
+                onChange={(e) => setJugadoraEnCanchaIndex(parseInt(e.target.value))}
+                className="p-2 border rounded"
+              >
+                <option value={-1}>Seleccionar</option>
+                {jugadorasEnCancha.map((jugadora, index) => (
+                  <option key={index} value={index}>{jugadora.nombre}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <h4>Fuera de cancha</h4>
+              <select
+                onChange={(e) => setJugadoraFueraIndex(parseInt(e.target.value))}
+                className="p-2 border rounded"
+              >
+                <option value={-1}>Seleccionar</option>
+                {jugadorasFuera.map((jugadora, index) => (
+                  <option key={index} value={index}>{jugadora.nombre}</option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
 
