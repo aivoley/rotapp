@@ -1,30 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 
-// Tipos y datos base
-type Jugadora = {
-  nombre: string;
-  posiciones: string[];
-};
-
-type Punto = {
-  resultado: "ganado" | "perdido";
-  motivo: string;
-  jugadora?: string;
-};
-
-const motivosGanados = ["ACE", "ATAQUE", "BLOQUEO", "TOQUE", "ERROR RIVAL"];
-const motivosPerdidos = [
-  "ERROR DE SAQUE",
-  "ERROR DE ATAQUE",
-  "BLOQUEO RIVAL",
-  "ERROR NO FORZADO",
-  "ERROR DE RECEPCION",
-  "ATAQUE RIVAL",
-  "SAQUE RIVAL",
-];
-
-const equipoEjemplo: Jugadora[] = [
+const jugadorasBase = [
   { nombre: "Candela", posiciones: ["Armadora"] },
   { nombre: "Miranda", posiciones: ["Armadora"] },
   { nombre: "Florencia", posiciones: ["Central", "Opuesta"] },
@@ -37,177 +14,216 @@ const equipoEjemplo: Jugadora[] = [
   { nombre: "Josefina", posiciones: ["Central"] },
   { nombre: "Abril S.", posiciones: ["Punta"] },
   { nombre: "Julieta A", posiciones: ["Punta", "Líbero"] },
+  { nombre: "Julieta S", posiciones: ["Opuesta", "Líbero"] },
+  { nombre: "Carolina", posiciones: ["Punta", "Líbero"] },
+  { nombre: "Flavia", posiciones: ["Punta", "Líbero"] },
+  { nombre: "Agustina", posiciones: ["Punta"] },
 ];
 
-// Estilos
+const motivosGanados = ["ACE", "ATAQUE", "BLOQUEO", "TOQUE", "ERROR RIVAL"];
+const motivosPerdidos = [
+  "ERROR DE SAQUE",
+  "ERROR DE ATAQUE",
+  "BLOQUEO RIVAL",
+  "ERROR NO FORZADO",
+  "ERROR DE RECEPCION",
+  "ATAQUE RIVAL",
+  "SAQUE RIVAL",
+];
+
+const zonas = ["Zona 1", "Zona 6", "Zona 5", "Zona 4", "Zona 3", "Zona 2"];
+
 const Cancha = styled.div`
+  width: 600px;
+  height: 400px;
   display: grid;
-  grid-template-columns: repeat(3, 120px);
-  grid-template-rows: repeat(2, 120px);
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
   gap: 10px;
-  background-color: #e6f4ea;
-  padding: 20px;
+  background: #e0f7fa;
+  padding: 10px;
   border-radius: 10px;
 `;
 
-const JugadoraBox = styled.div`
-  background-color: #ffffff;
-  border: 2px solid #4caf50;
+const Jugadora = styled.div`
+  background: white;
   border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
+  padding: 6px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 `;
 
-const Panel = styled.div`
-  padding: 20px;
-  background: #f9f9f9;
-  border-left: 2px solid #ccc;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+const Lateral = styled.div`
   width: 320px;
+  background: white;
+  padding: 16px;
+  border-left: 1px solid #ccc;
+  overflow-y: auto;
 `;
 
 export default function Simulador() {
-  const [cancha, setCancha] = useState<Jugadora[]>(equipoEjemplo.slice(0, 6));
-  const [banco, setBanco] = useState<Jugadora[]>(equipoEjemplo.slice(6));
-  const [puntos, setPuntos] = useState<Punto[]>([]);
-  const [motivo, setMotivo] = useState("");
-  const [jugadora, setJugadora] = useState<string>("");
-  const [cambioIn, setCambioIn] = useState("");
-  const [cambioOut, setCambioOut] = useState("");
+  const [formacion, setFormacion] = useState(jugadorasBase.slice(0, 6));
+  const [rotacion, setRotacion] = useState(0);
+  const [setActual, setSetActual] = useState(1);
+  const [sets, setSets] = useState([]);
+  const [puntosActual, setPuntosActual] = useState({ nosotros: 0, rival: 0 });
+  const [historialPuntos, setHistorialPuntos] = useState([]);
+  const [motivoGanado, setMotivoGanado] = useState("");
+  const [motivoPerdido, setMotivoPerdido] = useState("");
+  const [jugadoraGanadora, setJugadoraGanadora] = useState("");
 
-  const cargarPunto = (resultado: "ganado" | "perdido") => {
-    if (!motivo) return;
-    setPuntos((prev) => [
+  const rotar = () => {
+    setFormacion((prev) => [prev[5], ...prev.slice(0, 5)]);
+    setRotacion((r) => (r + 1) % 6);
+  };
+
+  const cargarResultado = (resultado) => {
+    const punto = {
+      set: setActual,
+      rotacion,
+      resultado,
+      motivo:
+        resultado === "ganado" ? motivoGanado : motivoPerdido,
+      jugadora: resultado === "ganado" ? jugadoraGanadora : null,
+    };
+
+    setHistorialPuntos((prev) => [...prev, punto]);
+
+    if (resultado === "ganado") {
+      setPuntosActual((prev) => ({ ...prev, nosotros: prev.nosotros + 1 }));
+    } else {
+      setPuntosActual((prev) => ({ ...prev, rival: prev.rival + 1 }));
+    }
+
+    setMotivoGanado("");
+    setMotivoPerdido("");
+    setJugadoraGanadora("");
+  };
+
+  const finalizarSet = () => {
+    setSets((prev) => [
       ...prev,
-      { resultado, motivo, jugadora: jugadora || undefined },
+      {
+        set: setActual,
+        puntos: puntosActual,
+        historial: historialPuntos,
+      },
     ]);
-    setMotivo("");
-    setJugadora("");
+    setSetActual((prev) => prev + 1);
+    setPuntosActual({ nosotros: 0, rival: 0 });
+    setHistorialPuntos([]);
   };
-
-  const cambiarJugadora = () => {
-    const entra = banco.find((j) => j.nombre === cambioIn);
-    const sale = cancha.find((j) => j.nombre === cambioOut);
-    if (!entra || !sale) return;
-
-    setCancha((prev) =>
-      prev.map((j) => (j.nombre === cambioOut ? entra : j))
-    );
-    setBanco((prev) =>
-      prev.map((j) => (j.nombre === cambioIn ? sale : j))
-    );
-    setCambioIn("");
-    setCambioOut("");
-  };
-
-  const resumen = puntos.reduce(
-    (acc, punto) => {
-      if (punto.resultado === "ganado") acc.ganados++;
-      else acc.perdidos++;
-
-      if (punto.motivo === "ACE") acc.aces++;
-      if (punto.motivo === "ATAQUE") acc.ataques++;
-      if (punto.motivo === "BLOQUEO") acc.bloqueos++;
-      return acc;
-    },
-    { ganados: 0, perdidos: 0, aces: 0, ataques: 0, bloqueos: 0 }
-  );
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <div style={{ flex: 1, padding: 20 }}>
-        <h1>Simulador de Rotaciones</h1>
+    <div className="flex flex-row w-full h-screen bg-green-50">
+      <div className="flex flex-col justify-center items-center flex-1 p-4">
+        <h1 className="text-2xl font-bold mb-2">Set {setActual}</h1>
+        <div className="flex gap-4 items-center mb-4">
+          <div className="text-lg font-semibold">Nosotros: {puntosActual.nosotros}</div>
+          <div className="text-lg font-semibold">Rival: {puntosActual.rival}</div>
+          <button
+            onClick={finalizarSet}
+            className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
+          >
+            Finalizar Set
+          </button>
+        </div>
+
         <Cancha>
-          {cancha.map((jug, i) => (
-            <JugadoraBox key={i}>
-              {jug.nombre}
-              <div style={{ fontSize: "0.8rem", color: "#555" }}>
-                {jug.posiciones.join("/")}
+          {formacion.map((jugadora, index) => (
+            <Jugadora key={index}>
+              <strong>{jugadora.nombre}</strong>
+              <div className="text-xs text-gray-500">
+                {jugadora.posiciones.join("/")}
               </div>
-            </JugadoraBox>
+            </Jugadora>
           ))}
         </Cancha>
-
-        <h3>Historial de Puntos</h3>
-        <ul>
-          {puntos.map((p, i) => (
-            <li key={i}>
-              {p.resultado === "ganado" ? "✔" : "✖"} {p.motivo}
-              {p.jugadora && ` - ${p.jugadora}`}
-            </li>
-          ))}
-        </ul>
       </div>
 
-      <Panel>
-        <h2>Control</h2>
-
-        <label>Motivo</label>
-        <select value={motivo} onChange={(e) => setMotivo(e.target.value)}>
-          <option value="">Selecciona</option>
-          {[...motivosGanados, ...motivosPerdidos].map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
-
-        <label>Jugadora (opcional)</label>
-        <select
-          value={jugadora}
-          onChange={(e) => setJugadora(e.target.value)}
+      <Lateral>
+        <h2 className="text-xl font-semibold mb-4">Controles</h2>
+        <button
+          onClick={rotar}
+          className="w-full bg-blue-600 text-white p-2 rounded mb-3 hover:bg-blue-700"
         >
-          <option value="">--</option>
-          {cancha.map((j) => (
-            <option key={j.nombre} value={j.nombre}>
-              {j.nombre}
-            </option>
+          🔁 Rotar
+        </button>
+
+        <div className="mb-4">
+          <label className="font-semibold">Motivo punto ganado</label>
+          <select
+            value={motivoGanado}
+            onChange={(e) => setMotivoGanado(e.target.value)}
+            className="w-full p-2 border rounded"
+          >
+            <option value="">Selecciona</option>
+            {motivosGanados.map((m) => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mb-4">
+          <label className="font-semibold">Motivo punto perdido</label>
+          <select
+            value={motivoPerdido}
+            onChange={(e) => setMotivoPerdido(e.target.value)}
+            className="w-full p-2 border rounded"
+          >
+            <option value="">Selecciona</option>
+            {motivosPerdidos.map((m) => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mb-4">
+          <label className="font-semibold">Jugadora destacada</label>
+          <select
+            value={jugadoraGanadora}
+            onChange={(e) => setJugadoraGanadora(e.target.value)}
+            className="w-full p-2 border rounded"
+          >
+            <option value="">Ninguna</option>
+            {formacion.map((j) => (
+              <option key={j.nombre} value={j.nombre}>{j.nombre}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => cargarResultado("ganado")}
+            className="flex-1 bg-green-500 text-white p-2 rounded hover:bg-green-600"
+          >
+            ✔ Ganado
+          </button>
+          <button
+            onClick={() => cargarResultado("perdido")}
+            className="flex-1 bg-red-500 text-white p-2 rounded hover:bg-red-600"
+          >
+            ✘ Perdido
+          </button>
+        </div>
+
+        <div>
+          <h3 className="font-semibold mb-2">Sets anteriores</h3>
+          {sets.map((s) => (
+            <div key={s.set} className="mb-2 border p-2 rounded bg-gray-100">
+              <strong>Set {s.set}</strong><br />
+              Nosotros: {s.puntos.nosotros} - Rival: {s.puntos.rival}
+              <ul className="text-sm list-disc list-inside mt-1">
+                {s.historial.map((p, i) => (
+                  <li key={i}>
+                    {p.resultado === "ganado" ? "✔" : "✘"} {p.motivo} {p.jugadora && `- ${p.jugadora}`}
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </select>
-
-        <button onClick={() => cargarPunto("ganado")}>✔ Punto ganado</button>
-        <button onClick={() => cargarPunto("perdido")}>✖ Punto perdido</button>
-
-        <h3>Cambiar jugadoras</h3>
-        <label>Sale</label>
-        <select
-          value={cambioOut}
-          onChange={(e) => setCambioOut(e.target.value)}
-        >
-          <option value="">--</option>
-          {cancha.map((j) => (
-            <option key={j.nombre} value={j.nombre}>
-              {j.nombre}
-            </option>
-          ))}
-        </select>
-
-        <label>Entra</label>
-        <select
-          value={cambioIn}
-          onChange={(e) => setCambioIn(e.target.value)}
-        >
-          <option value="">--</option>
-          {banco.map((j) => (
-            <option key={j.nombre} value={j.nombre}>
-              {j.nombre}
-            </option>
-          ))}
-        </select>
-        <button onClick={cambiarJugadora}>↔ Cambiar</button>
-
-        <h3>Resumen</h3>
-        <p>Puntos ganados: {resumen.ganados}</p>
-        <p>Puntos perdidos: {resumen.perdidos}</p>
-        <p>Aces: {resumen.aces}</p>
-        <p>Ataques: {resumen.ataques}</p>
-        <p>Bloqueos: {resumen.bloqueos}</p>
-      </Panel>
+        </div>
+      </Lateral>
     </div>
   );
 }
