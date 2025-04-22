@@ -19,22 +19,22 @@ const zonasOrdenadas = [
 ];
 
 const jugadorasBase = [
-  { nombre: "Candela", posiciones: ["Armadora"] },
-  { nombre: "Miranda", posiciones: ["Armadora"] },
-  { nombre: "Florencia", posiciones: ["Central", "Opuesta"] },
-  { nombre: "Abril M.", posiciones: ["Opuesta"] },
-  { nombre: "Micaela", posiciones: ["Punta"] },
-  { nombre: "Milena", posiciones: ["Punta"] },
-  { nombre: "Irina", posiciones: ["Punta", "Central"] },
-  { nombre: "Sol", posiciones: ["Punta"] },
-  { nombre: "Camila", posiciones: ["Central"] },
-  { nombre: "Josefina", posiciones: ["Central"] },
-  { nombre: "Abril S.", posiciones: ["Punta"] },
-  { nombre: "Julieta A", posiciones: ["Punta", "Líbero"] },
-  { nombre: "Julieta S", posiciones: ["Opuesta", "Líbero"] },
-  { nombre: "Carolina", posiciones: ["Punta", "Líbero"] },
-  { nombre: "Flavia", posiciones: ["Punta", "Líbero"] },
-  { nombre: "Agustina", posiciones: ["Punta"] },
+  { id: 1, nombre: "Candela", posiciones: ["Armadora"] },
+  { id: 2, nombre: "Miranda", posiciones: ["Armadora"] },
+  { id: 3, nombre: "Florencia", posiciones: ["Central", "Opuesta"] },
+  { id: 4, nombre: "Abril M.", posiciones: ["Opuesta"] },
+  { id: 5, nombre: "Micaela", posiciones: ["Punta"] },
+  { id: 6, nombre: "Milena", posiciones: ["Punta"] },
+  { id: 7, nombre: "Irina", posiciones: ["Punta", "Central"] },
+  { id: 8, nombre: "Sol", posiciones: ["Punta"] },
+  { id: 9, nombre: "Camila", posiciones: ["Central"] },
+  { id: 10, nombre: "Josefina", posiciones: ["Central"] },
+  { id: 11, nombre: "Abril S.", posiciones: ["Punta"] },
+  { id: 12, nombre: "Julieta A", posiciones: ["Punta", "Líbero"] },
+  { id: 13, nombre: "Julieta S", posiciones: ["Opuesta", "Líbero"] },
+  { id: 14, nombre: "Carolina", posiciones: ["Punta", "Líbero"] },
+  { id: 15, nombre: "Flavia", posiciones: ["Punta", "Líbero"] },
+  { id: 16, nombre: "Agustina", posiciones: ["Punta"] },
 ];
 
 const motivosGanado = ["ACE", "ATAQUE", "BLOQUEO", "TOQUE", "ERROR RIVAL"];
@@ -150,15 +150,21 @@ const Boton = styled.button`
   }
 `;
 
+const BotonNuevoPartido = styled.button`
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  &:hover {
+    background: #d97706;
+  }
+`;
+
 export default function App() {
-  const [formacion, setFormacion] = useState([
-    { id: 1, ...jugadorasBase[0] },
-    { id: 2, ...jugadorasBase[1] },
-    { id: 3, ...jugadorasBase[2] },
-    { id: 4, ...jugadorasBase[3] },
-    { id: 5, ...jugadorasBase[4] },
-    { id: 6, ...jugadorasBase[5] },
-  ]);
+  const [formacion, setFormacion] = useState(jugadorasBase.slice(0, 6));
   const [rotacion, setRotacion] = useState(0);
   const [puntos, setPuntos] = useState([]);
   const [historico, setHistorico] = useState([]);
@@ -170,6 +176,7 @@ export default function App() {
     new Date().toISOString().split("T")[0]
   );
   const [seleccionada, setSeleccionada] = useState<number | null>(null);
+  const [setActual, setSetActual] = useState(1);
 
   const rotar = () => {
     const nueva = [...formacion];
@@ -218,6 +225,31 @@ export default function App() {
     perdido: val.perdido || 0,
   }));
 
+  const agregarJugadora = (jugadora: { nombre: string; posiciones: string[] }) => {
+    setFormacion((prev) => [...prev, jugadora]);
+  };
+
+  const quitarJugadora = (index: number) => {
+    setFormacion((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const nuevoPartido = () => {
+    setFormacion(jugadorasBase.slice(0, 6));
+    setRotacion(0);
+    setPuntos([]);
+    setHistorico([]);
+    setSetActual(1);
+  };
+
+  const siguienteSet = () => {
+    if (setActual < 5) setSetActual(setActual + 1);
+  };
+
+  const resultadosSets = Array.from({ length: 5 }, (_, i) => ({
+    set: i + 1,
+    resultado: "Ganado", // Aquí puedes añadir la lógica para los resultados
+  }));
+
   return (
     <Layout>
       <CanchaContainer>
@@ -241,6 +273,8 @@ export default function App() {
           })}
         </Cancha>
         <BotonRotar onClick={rotar}>🔁 Rotar</BotonRotar>
+        <BotonNuevoPartido onClick={nuevoPartido}>Nuevo Partido</BotonNuevoPartido>
+        <button onClick={siguienteSet}>Siguiente Set</button>
       </CanchaContainer>
 
       <PanelDerecho>
@@ -295,8 +329,20 @@ export default function App() {
               ))}
             </Select>
           )}
+
           <Boton type="submit">Registrar Punto</Boton>
         </form>
+
+        <div>
+          <h3>Resultados de los Sets:</h3>
+          <ul>
+            {resultadosSets.map((result) => (
+              <li key={result.set}>
+                Set {result.set}: {result.resultado}
+              </li>
+            ))}
+          </ul>
+        </div>
       </PanelDerecho>
     </Layout>
   );
