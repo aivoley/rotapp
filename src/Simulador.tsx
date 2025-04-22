@@ -82,6 +82,7 @@ export default function Simulador() {
   const [motivoGanado, setMotivoGanado] = useState("");
   const [motivoPerdido, setMotivoPerdido] = useState("");
   const [jugadoraGanadora, setJugadoraGanadora] = useState<string | null>(null);
+  const [jugadorasSuplentes, setJugadorasSuplentes] = useState(jugadorasBase.slice(6));
 
   const zonas = [
     { area: "z1", nombre: "Zona 1" },
@@ -125,14 +126,30 @@ export default function Simulador() {
     setHistorial([]);
   };
 
-  const cambiarJugadora = (zona: number, nueva: string) => {
-    const index = formacion.findIndex(j => j.nombre === nueva);
-    if (index === -1) {
-      const nuevaJugadora = jugadorasBase.find(j => j.nombre === nueva);
-      const nuevaFormacion = [...formacion];
-      if (nuevaJugadora) nuevaFormacion[zona] = nuevaJugadora;
-      setFormacion(nuevaFormacion);
-    }
+  const generarEquipo = () => {
+    const equipo = [...jugadorasBase].sort(() => 0.5 - Math.random()).slice(0, 6); // Mezclar y tomar las primeras 6 jugadoras
+    setFormacion(equipo); // Asignamos a la cancha
+    setJugadorasSuplentes(jugadorasBase.slice(6)); // Suplentes son el resto
+    setRotacion(0);
+    setPuntosSet([0, 0]);
+    setHistorial([]);
+  };
+
+  const cambiarJugadora = (zona: number) => {
+    const jugadoraEnCancha = formacion[zona];
+    const jugadoraEnBanco = jugadorasSuplentes[0]; // Seleccionamos la primera suplente (puedes hacer más dinámico si deseas)
+    
+    // Cambiamos las jugadoras
+    const nuevaFormacion = [...formacion];
+    const nuevasSuplentes = [...jugadorasSuplentes];
+    
+    // Reemplazamos las jugadoras
+    nuevaFormacion[zona] = jugadoraEnBanco;
+    nuevasSuplentes[0] = jugadoraEnCancha; // La jugadora de la cancha pasa al banco
+
+    // Actualizamos los estados
+    setFormacion(nuevaFormacion);
+    setJugadorasSuplentes(nuevasSuplentes);
   };
 
   return (
@@ -152,6 +169,8 @@ export default function Simulador() {
         <div>Puntaje: {puntosSet[0]} - {puntosSet[1]}</div>
         <button onClick={rotar}>🔁 Rotar</button>
         <button onClick={generarRotacion}>🎲 Generar Rotación</button>
+        <button onClick={generarEquipo}>🌀 Crear Equipo</button>
+        
         <div>
           <h4>Motivo punto ganado</h4>
           <select value={motivoGanado} onChange={(e) => setMotivoGanado(e.target.value)}>
@@ -171,9 +190,22 @@ export default function Simulador() {
           <button onClick={() => registrarPunto("ganado")}>✔ Punto Ganado</button>
           <button onClick={() => registrarPunto("perdido")}>❌ Punto Perdido</button>
         </div>
+        
         <div>
           <h3>Historial</h3>
           <ul>{historial.map((p, i) => <li key={i}>{p}</li>)}</ul>
+        </div>
+
+        <div>
+          <h3>Suplentes</h3>
+          <ul>
+            {jugadorasSuplentes.map((j, idx) => (
+              <li key={idx}>
+                {j.nombre} - {j.posiciones.join("/")}
+                <button onClick={() => cambiarJugadora(idx)}>👉 Cambiar</button>
+              </li>
+            ))}
+          </ul>
         </div>
       </Panel>
     </Container>
