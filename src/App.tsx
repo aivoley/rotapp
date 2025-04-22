@@ -44,7 +44,7 @@ const motivosPerdidos = [
   "SAQUE RIVAL",
 ];
 
-export default function Simulador() {
+export default function app() {
   const [formacion, setFormacion] = useState<Jugadora[]>(jugadorasBase.slice(0, 6));
   const [rotacion, setRotacion] = useState(0);
   const [puntos, setPuntos] = useState<Punto[]>([]);
