@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+// Jugadoras base con sus posiciones
 const jugadorasBase = [
   { nombre: "Candela", posiciones: ["Armadora"] },
   { nombre: "Miranda", posiciones: ["Armadora"] },
@@ -19,6 +20,7 @@ const jugadorasBase = [
   { nombre: "Agustina", posiciones: ["Punta"] },
 ];
 
+// Motivos posibles para los puntos ganados y perdidos
 const motivosGanados = [
   "ACE", "ATAQUE", "BLOQUEO", "TOQUE", "ERROR RIVAL"
 ];
@@ -27,25 +29,31 @@ const motivosPerdidos = [
   "ERROR DE SAQUE", "ERROR DE ATAQUE", "BLOQUEO RIVAL", "ERROR NO FORZADO", "ERROR DE RECEPCION", "ATAQUE RIVAL", "BLOQUEO RIVAL", "SAQUE RIVAL"
 ];
 
-const zonas = ["Zona 1", "Zona 6", "Zona 5", "Zona 4", "Zona 3", "Zona 2"];
-
 export default function Simulador() {
+  // Estado para las jugadoras en la cancha
   const [formacion, setFormacion] = useState(jugadorasBase.slice(0, 6));
+  // Estado para la rotación actual
   const [rotacion, setRotacion] = useState(0);
+  // Historial de puntos
   const [puntos, setPuntos] = useState([]);
+  // Motivo de puntos ganados y perdidos
   const [motivoGanado, setMotivoGanado] = useState("");
   const [motivoPerdido, setMotivoPerdido] = useState("");
   const [jugadoraGanadora, setJugadoraGanadora] = useState(null);
 
+  // Estado para el set actual y los sets anteriores
   const [setActual, setSetActual] = useState(1);
   const [setsAnteriores, setSetsAnteriores] = useState<number[]>([]);
+  // Puntos del set actual
   const [puntosSetActual, setPuntosSetActual] = useState({ nuestros: 0, rivales: 0 });
 
+  // Función para rotar las jugadoras
   const rotar = () => {
     setFormacion(prev => [prev[5], ...prev.slice(0, 5)]);
     setRotacion(r => (r + 1) % 6);
   };
 
+  // Función para cargar el resultado de un punto
   const cargarResultado = (resultado) => {
     const punto = {
       rotacion,
@@ -64,6 +72,7 @@ export default function Simulador() {
     }
   };
 
+  // Función para cambiar las jugadoras manualmente
   const cambiarJugadoras = () => {
     const nuevas = prompt("Escribí los nombres de las 6 jugadoras separadas por coma").split(",");
     const nuevasJugadoras = nuevas.map(nombre => jugadorasBase.find(j => j.nombre === nombre.trim())).filter(Boolean);
@@ -71,6 +80,7 @@ export default function Simulador() {
     else alert("Revisá los nombres, debe haber 6 y coincidir con la base");
   };
 
+  // Función para terminar el set y guardar el resultado
   const terminarSet = () => {
     setSetsAnteriores(prev => [...prev, puntosSetActual.nuestros]);
     setSetActual(prev => prev + 1);
@@ -200,3 +210,4 @@ export default function Simulador() {
     </div>
   );
 }
+
